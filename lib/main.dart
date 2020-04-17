@@ -4,13 +4,30 @@ import 'package:async/async.dart';
 
 void main() => runApp(MyApp());
 
+const MaterialColor customSwatch = const MaterialColor(
+  0xFFFFFFFF,
+  const <int, Color>{
+    50: const Color(0xFFFEFEFE),
+    100: const Color(0xFFFDFDFD),
+    200: const Color(0xFFFCFCFC),
+    300: const Color(0xFFFBFBFB),
+    400: const Color(0xFFFAFAFA),
+    500: const Color(0xFFF9F9F9),
+    600: const Color(0xFFF8F8F8),
+    700: const Color(0xFFF7F7F7),
+    800: const Color(0xFFF6F6F6),
+    900: const Color(0xFFF5F5F5),
+  },
+);
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter ChipsChoice',
       theme: ThemeData(
-        primarySwatch: Colors.red,
+        primarySwatch: customSwatch,
+        canvasColor: Colors.transparent,
       ),
       home: MyHomePage(),
     );
@@ -27,10 +44,17 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String> tags = [];
 
   List<String> options = [
-    '育成牛すべて',
-    '3ヶ月未満',
-    '3ヶ月〜6ヶ月',
-    '7〜9ヶ月',
+    'News',
+    'Entertainment',
+    'Politics',
+    'Automotive',
+    'Sports',
+    'Education',
+    'Fashion',
+    'Travel',
+    'Food',
+    'Tech',
+    'Science',
   ];
 
   @override
@@ -38,18 +62,12 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Flutter ChipsChoice'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.help_outline),
-//            onPressed: () => _about(context),
-          )
-        ],
       ),
       body: ListView(
         padding: EdgeInsets.all(5),
         children: <Widget>[
           Content(
-            title: '表示する育成牛を選択してください',
+            title: 'Scrollable List Single Choice',
             child: ChipsChoice<int>.single(
               value: tag,
               options: ChipsChoiceOption.listFrom<int, String>(
@@ -60,68 +78,159 @@ class _MyHomePageState extends State<MyHomePage> {
               onChanged: (val) => setState(() => tag = val),
             ),
           ),
-        ],
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-}
-
-class CustomChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final Function(bool selected) onSelect;
-
-  CustomChip(this.label, this.selected, this.onSelect, {Key key})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      height: 100,
-      width: 70,
-      margin: EdgeInsets.symmetric(
-        vertical: 15,
-        horizontal: 5,
-      ),
-      duration: Duration(milliseconds: 300),
-      decoration: BoxDecoration(
-        color: selected ? Colors.green : Colors.transparent,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: selected ? Colors.green : Colors.grey,
-          width: 1,
-        ),
-      ),
-      child: InkWell(
-        onTap: () => onSelect(!selected),
-        child: Stack(
-          alignment: Alignment.center,
-          children: <Widget>[
-            Visibility(
-                visible: selected,
-                child: Icon(
-                  Icons.check_circle_outline,
-                  color: Colors.white,
-                  size: 32,
-                )),
-            Positioned(
-              left: 9,
-              right: 9,
-              bottom: 7,
-              child: Container(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: selected ? Colors.white : Colors.black45,
-                  ),
-                ),
+          Content(
+            title: 'Scrollable List Multiple Choice',
+            child: ChipsChoice<String>.multiple(
+              value: tags,
+              options: ChipsChoiceOption.listFrom<String, String>(
+                source: options,
+                value: (i, v) => v,
+                label: (i, v) => v,
+              ),
+              onChanged: (val) => setState(() => tags = val),
+            ),
+          ),
+          Content(
+            title: 'Wrapped List Single Choice',
+            child: ChipsChoice<int>.single(
+              value: tag,
+              options: ChipsChoiceOption.listFrom<int, String>(
+                source: options,
+                value: (i, v) => i,
+                label: (i, v) => v,
+              ),
+              onChanged: (val) => setState(() => tag = val),
+              isWrapped: true,
+            ),
+          ),
+          Content(
+            title: 'Wrapped List Multiple Choice',
+            child: ChipsChoice<String>.multiple(
+              value: tags,
+              options: ChipsChoiceOption.listFrom<String, String>(
+                source: options,
+                value: (i, v) => v,
+                label: (i, v) => v,
+              ),
+              onChanged: (val) => setState(() => tags = val),
+              isWrapped: true,
+            ),
+          ),
+          Content(
+            title: 'Disabled Choice Item',
+            child: ChipsChoice<int>.single(
+              value: tag,
+              options: ChipsChoiceOption.listFrom<int, String>(
+                source: options,
+                value: (i, v) => i,
+                label: (i, v) => v,
+                disabled: (i, v) => [0, 2, 5].contains(i),
+              ),
+              onChanged: (val) => setState(() => tag = val),
+              isWrapped: true,
+            ),
+          ),
+          Content(
+            title: 'Hidden Choice Item',
+            child: ChipsChoice<String>.multiple(
+              value: tags,
+              options: ChipsChoiceOption.listFrom<String, String>(
+                source: options,
+                value: (i, v) => v,
+                label: (i, v) => v,
+                hidden: (i, v) =>
+                    ['Science', 'Politics', 'News', 'Tech'].contains(v),
+              ),
+              onChanged: (val) => setState(() => tags = val),
+              isWrapped: true,
+            ),
+          ),
+          Content(
+            title: 'Append an Item to Options',
+            child: ChipsChoice<int>.single(
+              value: tag,
+              options: ChipsChoiceOption.listFrom<int, String>(
+                source: options,
+                value: (i, v) => i,
+                label: (i, v) => v,
+              )..insert(0, ChipsChoiceOption<int>(value: -1, label: 'All')),
+              onChanged: (val) => setState(() => tag = val),
+            ),
+          ),
+          Content(
+            title: 'Selected without Checkmark and Brightness Dark',
+            child: ChipsChoice<int>.single(
+              value: tag,
+              onChanged: (val) => setState(() => tag = val),
+              options: ChipsChoiceOption.listFrom<int, String>(
+                source: options,
+                value: (i, v) => i,
+                label: (i, v) => v,
+              )..insert(0, ChipsChoiceOption<int>(value: -1, label: 'All')),
+              itemConfig: const ChipsChoiceItemConfig(
+                showCheckmark: false,
+                labelStyle: TextStyle(fontSize: 20),
+                selectedBrightness: Brightness.dark,
+                // unselectedBrightness: Brightness.dark,
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+
+          //以下がテーマカラーに影響されないコンテンツ
+          Content(
+            title: 'Works with FormField and Validator',
+            child: FormField<List<String>>(
+              autovalidate: true,
+              initialValue: tags,
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please select some categories';
+                }
+                if (value.length > 5) {
+                  return "Can't select more than 5 categories";
+                }
+                return null;
+              },
+              builder: (state) {
+                return Column(
+                  children: <Widget>[
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: ChipsChoice<String>.multiple(
+                        value: state.value,
+                        options: ChipsChoiceOption.listFrom<String, String>(
+                          source: options,
+                          value: (i, v) => v,
+                          label: (i, v) => v,
+                        ),
+                        onChanged: (val) => state.didChange(val),
+                        itemConfig: ChipsChoiceItemConfig(
+                          selectedColor: Colors.indigo,
+                          selectedBrightness: Brightness.dark,
+                          unselectedColor: Colors.indigo,
+                          unselectedBorderOpacity: .3,
+                        ),
+                        isWrapped: true,
+                      ),
+                    ),
+                    Container(
+                        padding: EdgeInsets.fromLTRB(15, 0, 15, 15),
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          state.errorText ??
+                              state.value.length.toString() + '/5 selected',
+                          style: TextStyle(
+                              color: state.hasError
+                                  ? Colors.redAccent
+                                  : Colors.green),
+                        ))
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
@@ -161,49 +270,3 @@ class Content extends StatelessWidget {
     );
   }
 }
-
-//void _about(BuildContext context) {
-//  showDialog(
-//    context: context,
-//    builder: (_) => Dialog(
-//      child: Column(
-//        mainAxisSize: MainAxisSize.min,
-//        children: <Widget>[
-//          ListTile(
-//            title: Text(
-//              'chips_choice',
-//              style: Theme.of(context)
-//                  .textTheme
-//                  .headline
-//                  .copyWith(color: Colors.black87),
-//            ),
-//            subtitle: Text('by davigmacode'),
-//            trailing: IconButton(
-//              icon: Icon(Icons.close),
-//              onPressed: () => Navigator.pop(context),
-//            ),
-//          ),
-//          Flexible(
-//            fit: FlexFit.loose,
-//            child: Container(
-//              padding: EdgeInsets.symmetric(horizontal: 15),
-//              child: Column(
-//                mainAxisSize: MainAxisSize.min,
-//                children: <Widget>[
-//                  Text(
-//                    'Easy way to provide a single or multiple choice chips.',
-//                    style: Theme.of(context)
-//                        .textTheme
-//                        .body1
-//                        .copyWith(color: Colors.black54),
-//                  ),
-//                  Container(height: 15),
-//                ],
-//              ),
-//            ),
-//          ),
-//        ],
-//      ),
-//    ),
-//  );
-//}
